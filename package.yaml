@@ -1,0 +1,36 @@
+name:                shortcut-highlighter
+version:             0.1.0.0
+synopsis:            Set of tools and services to highlight shortcuts
+#description:
+homepage:            https://github.com/Rasie1/shortcut-highlighter
+license:             GPL-3
+author:              Vsevolod Kvachev
+maintainer:          vsevolod@kvachev.com
+copyright:           2019 Vsevolod Kvachev
+category:            Productivity
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - text
+  - mtl
+  - containers
+  - megaparsec
+
+executables:
+  shortcut-highlighter:
+    source-dirs:      src
+    main:             Main.hs
+
+tests:
+  spec:
+    main: Tests.hs
+    source-dirs:
+      - test
+      - src
+    dependencies:
+      - test-framework
+      - test-framework-hunit
+      - HUnit
+      - containers
