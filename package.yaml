@@ -17,6 +17,20 @@ dependencies:
   - mtl
   - containers
   - megaparsec
+  - process
+  - containers
+  - megaparsec
+  - typed-process
+  - async
+  - stm
+  - bytestring
+  - network
+  - utf8-string
+  - binary
+  - aeson
+  - dbus
+  - time
+  - unbounded-delays
 
 executables:
   shortcut-highlighter:
