@@ -2,26 +2,40 @@ import Color
 import Data.Int
 import Control.Monad
 import Devices.Razer
+import Devices.System
 import DBus.Client
 import Control.Concurrent.Thread.Delay
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
+import Effects
 
-shifted :: NominalDiffTime -> (Int32, Int32) -> Color
-shifted it (iy, ix) = (r, g, b)
-    where x = fromIntegral ix
-          y = fromIntegral iy
-          t = it * 100
-          r = (round (x * 34  + t))
-          g = (round (x * 33  + t))
-          b = (round (y * 16  + t))
+keyboardUpdateRate = 40000
+frequentInfoUpdateRate = 1.0
+infrequentInfoUpdateRate = 60.0
+
+step previousUpdateTime previousTime client dimensions cpu effectsData = do
+    t <- getPOSIXTime
+
+    let shouldUpdateInfo = t - previousUpdateTime > frequentInfoUpdateRate
+    cpu <- if shouldUpdateInfo 
+                then updateCPUUsage (snd cpu)
+                else return cpu
+
+    let deltaTime = t - previousTime
+    let newEffectsData = effectsData + realToFrac deltaTime * fst cpu
+    let frame = fillKeyboard (gradients1 newEffectsData) dimensions
+
+    setFrame frame client
+
+    delay keyboardUpdateRate
+
+    let newTime = if shouldUpdateInfo then t else previousUpdateTime
+    step newTime t client dimensions cpu newEffectsData
 
 main = do
     client <- connectSession
     dimensions <- getMatrixDimensions client
-    forever $ do
-        t <- getPOSIXTime
-        let f = fillKeyboard (shifted t) dimensions
-        print (shifted t (10, 16))
-        delay 40000
-        setFrame f client
+    startTime <- getPOSIXTime
+    cpu <- getCPUUsage
+
+    step startTime startTime client dimensions cpu 0
