@@ -1,8 +1,41 @@
 module Keyboard where
 
 import Data.Int
+import Data.Char (ord)
 import Color
 import Control.Monad.State.Lazy
+
+data KeyboardLightingMode = LightingDefault
+                          | LightingCtrlShiftSuper
+                          | LightingCtrlSuper
+                          | LightingCtrlAltShift
+                          | LightingCtrlShift
+                          | LightingCtrlAlt
+                          | LightingCtrl
+                          | LightingShiftSuper
+                          | LightingAltSuper
+                          | LightingSuper
+                          | LightingAltShift
+                          | LightingShift
+                          | LightingAlt
+
+data KeyboardLightingState = KeyboardLightingState { _mode :: KeyboardLightingMode, _time :: Double }
+
+signalToMode :: KeyboardSignal -> Maybe KeyboardLightingMode
+signalToMode SignalCtrlShiftSuper = Just LightingCtrlShiftSuper
+signalToMode SignalCtrlSuper = Just LightingCtrlSuper
+signalToMode SignalCtrlAltShift = Just LightingCtrlAltShift
+signalToMode SignalCtrlShift = Just LightingCtrlShift
+signalToMode SignalCtrlAlt = Just LightingCtrlAlt
+signalToMode SignalCtrl = Just LightingCtrl
+signalToMode SignalShiftSuper = Just LightingShiftSuper
+signalToMode SignalAltSuper = Just LightingAltSuper
+signalToMode SignalSuper = Just LightingSuper
+signalToMode SignalAltShift = Just LightingAltShift
+signalToMode SignalShift = Just LightingShift
+signalToMode SignalAlt = Just LightingAlt
+signalToMode SignalDefault = Just LightingDefault
+signalToMode _ = Nothing
 
 setColor :: (Int32, Int32) -> Color -> State Frame ()
 setColor pos c = return ()
@@ -98,3 +131,43 @@ setArrowLeft = setColor (5,12)
 setArrowUp = setColor (5,13)
 setArrowRight = setColor (5,14)
 setArrowDown = setColor (5,15)
+
+data KeyboardSignal =
+      SignalCtrlShiftSuper
+    | SignalCtrlSuper
+    | SignalCtrlAltShift
+    | SignalCtrlShift
+    | SignalCtrlAlt
+    | SignalCtrl
+    | SignalShiftSuper
+    | SignalAltSuper
+    | SignalSuper
+    | SignalAltShift
+    | SignalShift
+    | SignalAlt
+    | SignalDefault
+    | SignalSwitchlang
+    | SignalUpdateWorkspaces
+    | SignalSetReactive
+    | SignalUnsetReactive
+    deriving (Show)
+
+charToSignal :: Char -> KeyboardSignal
+charToSignal c = case ord c of
+    0  -> SignalCtrlShiftSuper
+    1  -> SignalCtrlSuper
+    2  -> SignalCtrlAltShift
+    3  -> SignalCtrlShift
+    4  -> SignalCtrlAlt
+    5  -> SignalCtrl
+    6  -> SignalShiftSuper
+    7  -> SignalAltSuper
+    8  -> SignalSuper
+    9  -> SignalAltShift
+    10 -> SignalShift
+    11 -> SignalAlt
+    12 -> SignalDefault
+    15 -> SignalSwitchlang
+    14 -> SignalUpdateWorkspaces
+    56 -> SignalSetReactive
+    57 -> SignalUnsetReactive

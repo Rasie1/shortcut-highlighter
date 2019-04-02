@@ -31,6 +31,7 @@ dependencies:
   - dbus
   - time
   - unbounded-delays
+  - unix
 
 executables:
   shortcut-highlighter:

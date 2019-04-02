@@ -55,7 +55,6 @@ getMatrixDimensions :: Client -> IO (Int32, Int32)
 getMatrixDimensions c = do
     reply <-call_ c (methodCall deviceAddress "razer.device.misc"  "getMatrixDimensions") 
                     { methodCallDestination = Just "org.razer" }
-    print reply
     let [x:y:[]] = (map (fromJust . fromVariant) (methodReturnBody reply)) :: [[Int32]]
     return (x, y)
 
