@@ -2,16 +2,31 @@ module Keyboard where
 
 import Data.Int
 import Data.Char (ord)
-import Color
-import Effects
 import Control.Monad.State.Lazy
 
+import Color
+import Effects
+import Layouts
 
-light :: Bool -> (Int32, Int32) -> KeyboardLightingState -> IO (Maybe Frame)
+
+light :: Bool -> (Int32, Int32) -> KeyboardLightingState -> Maybe Frame
 light new dim KeyboardLightingState {_mode = mode, _time = t} = 
-    return $ case mode of
-        LightingDefault -> Just $ fillKeyboard (oneColor colorRed t) dim
-        _               -> Just $ fillKeyboard (oneColor colorBlue t) dim
+    case mode of
+        LightingCtrlShiftSuper -> withNewFrame lightCtrlShiftSuper
+        LightingCtrlSuper -> withNewFrame lightCtrlSuper
+        LightingCtrlAltShift -> withNewFrame lightCtrlAltShift
+        LightingCtrlShift -> withNewFrame lightCtrlShift
+        LightingCtrlAlt -> withNewFrame lightCtrlAlt
+        LightingCtrl -> withNewFrame lightCtrl
+        LightingShiftSuper -> withNewFrame lightShiftSuper
+        LightingAltSuper -> withNewFrame lightAltSuper
+        LightingSuper -> withNewFrame lightSuper
+        LightingAltShift -> withNewFrame lightAltShift
+        LightingShift -> withNewFrame lightShift
+        LightingAlt -> withNewFrame lightAlt
+        _               -> Just $ fillKeyboard (rainbow t) dim
+    where withNewFrame :: State Frame () -> Maybe Frame
+          withNewFrame actions = if not new then Nothing else Just . snd $ (runState actions (fillKeyboard (oneColor colorRed t) dim)) 
 
 
 data KeyboardLightingMode = LightingDefault
@@ -45,101 +60,6 @@ signalToMode SignalShift = Just LightingShift
 signalToMode SignalAlt = Just LightingAlt
 signalToMode SignalDefault = Just LightingDefault
 signalToMode _ = Nothing
-
-setColor :: (Int32, Int32) -> Color -> State Frame ()
-setColor pos c = return ()
-
-lightModifiers :: State Frame ()
-lightModifiers = do
-    setLeftShift colorRed
-
--- Layout for German keyboard. Sorry, you'll have to remap keys for your keyboard.
-
-setEscape = setColor (0,1)
-setF1 = setColor (0,1)
-setF2 = setColor (0,1)
-setF3 = setColor (0,1)
-setF4 = setColor (0,1)
-setF5 = setColor (0,1)
-setF6 = setColor (0,1)
-setF7 = setColor (0,1)
-setF8 = setColor (0,1)
-setF9 = setColor (0,1)
-setF10 = setColor (0,1)
-setF11 = setColor (0,1)
-setF12 = setColor (0,1)
-setInsert = setColor (0,1)
-setDelete = setColor (0,1)
-
-setCircumflex = setColor (1,1)
-setDigit0 = setColor (1,1)
-setDigit1 = setColor (1,1)
-setDigit2 = setColor (1,1)
-setDigit3 = setColor (1,1)
-setDigit4 = setColor (1,1)
-setDigit5 = setColor (1,1)
-setDigit6 = setColor (1,1)
-setDigit7 = setColor (1,1)
-setDigit8 = setColor (1,1)
-setDigit9 = setColor (1,1)
-setEszett = setColor (1,1)
-setBackquote = setColor (1,1)
-setBackspace = setColor (1,1)
-
-setTab = setColor (2,1)
-setQ = setColor (2,1)
-setW = setColor (2,1)
-setE = setColor (2,1)
-setR = setColor (2,1)
-setT = setColor (2,1)
-setZ = setColor (2,1)
-setU = setColor (2,1)
-setI = setColor (2,1)
-setO = setColor (2,1)
-setP = setColor (2,1)
-setUumlaut = setColor (2,1)
-setPlus = setColor (2,1)
-setEnter = setColor (2,1)
-
-setCapsLock = setColor (3,1)
-setA = setColor (3,1)
-setS = setColor (3,1)
-setD = setColor (3,1)
-setF = setColor (3,1)
-setG = setColor (3,1)
-setH = setColor (3,1)
-setJ = setColor (3,1)
-setK = setColor (3,1)
-setL = setColor (3,1)
-setOumlaut = setColor (3,1)
-setAumlaut = setColor (3,1)
-setHash = setColor (3,1)
-
-setLeftShift = setColor (4,1)
-setLess = setColor (4,1)
-setY = setColor (4,1)
-setX = setColor (4,1)
-setC = setColor (4,1)
-setV = setColor (4,1)
-setB = setColor (4,1)
-setN = setColor (4,1)
-setM = setColor (4,1)
-setComma = setColor (4,1)
-setPeriod = setColor (4,1)
-setMinus = setColor (4,1)
-setRightShift = setColor (4,1)
-
-setLeftControl = setColor (5,1)
-setLeftFn = setColor (5,2)
-setLeftSuper = setColor (5,3)
-setLeftAlt = setColor (5,4)
-setRightAlt = setColor (5,9)
-setRightFn = setColor (5,10)
-setRightControl = setColor (5,11)
-setArrowLeft = setColor (5,12)
-setArrowUp = setColor (5,13)
-setArrowRight = setColor (5,14)
-setArrowDown = setColor (5,15)
 
 data KeyboardSignal =
       SignalCtrlShiftSuper

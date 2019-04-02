@@ -3,6 +3,8 @@ module Color where
 import Prelude
 import Data.Int
 import Data.Word
+import Control.Monad.State.Lazy
+import Data.List.Index
 
 type ColorComponent = Word8
 
@@ -64,3 +66,10 @@ solidColor :: Color -> (Int32, Int32) -> Frame
 solidColor color dim = Frame { _dimensions = (fromIntegral h, fromIntegral w), _keys = keys }
     where (h, w) = dim
           keys = replicate (fromIntegral h) (replicate (fromIntegral w) color)
+
+setColor :: (Int32, Int32) -> Color -> State Frame ()
+setColor (y, x) c = do
+    frame <- get
+    let row = _keys frame !! fromIntegral y
+    let newRow = setAt (fromIntegral x) c row
+    put frame { _keys = setAt (fromIntegral y) newRow (_keys frame) }

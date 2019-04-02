@@ -37,7 +37,7 @@ step previousUpdateTime previousTime client dimensions cpu keyboardDaemonFile st
                       else return Nothing
     let newState = state { _time = _time state + realToFrac deltaTime * fst cpu
                          , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode }
-    nextFrame <- light (isJust maybeSignal) dimensions newState
+    let nextFrame = light (isJust maybeSignal) dimensions newState
 
     -- print (variedRainbow newEffectsTime (1, 1))
     when (isJust nextFrame) $ setFrame (fromJust nextFrame) client
