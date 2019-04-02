@@ -41,11 +41,17 @@ step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile s
     newWorkspaces <- case maybeSignal of
                         Just SignalUpdateWorkspaces -> I3.getWorkspacesConfig i3
                         _ -> return $ _workspaces state
+    newLanguage <- case maybeSignal of
+                        Just SignalSwitchlang -> case _language state of
+                            LangUS -> setLanguageRu >> return LangRU
+                            LangRU -> setLanguageUs >> return LangUS
 
+                        _ -> return $ _language state
     let newState = 
             state { _time = _time state + realToFrac deltaTime * fst cpu
                 , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode
-                , _workspaces = newWorkspaces }
+                , _workspaces = newWorkspaces 
+                , _language = newLanguage }
     let nextFrame = light (isJust maybeSignal) dimensions newState
 
     -- print (variedRainbow newEffectsTime (1, 1))
@@ -77,6 +83,7 @@ main = do
     let filePath = "/etc/rasiel/keyboardrasiel2"
     -- let filePath = "/home/rasiel/.config/i3/keyboardrasiel"
     keyboardDaemonFile <- getKeyboardDaemonFile filePath
-    let state = KeyboardLightingState { _mode = LightingDefault, _time = 0.0, _workspaces = ws }
+    setLanguageUs
+    let state = KeyboardLightingState { _mode = LightingDefault, _time = 0.0, _workspaces = ws, _language = LangUS }
 
     step startTime startTime dbus i3 dimensions cpu keyboardDaemonFile state

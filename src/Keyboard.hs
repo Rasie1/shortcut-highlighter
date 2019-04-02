@@ -10,7 +10,7 @@ import Layouts
 import Devices.I3 ( WorkspaceConfig(..))
 
 light :: Bool -> (Int32, Int32) -> KeyboardLightingState -> Maybe Frame
-light new dim KeyboardLightingState {_mode = mode, _time = t, _workspaces = workspaces} = 
+light new dim KeyboardLightingState {_mode = mode, _time = t, _workspaces = workspaces, _language = lang} = 
     case mode of
         LightingCtrlShiftSuper -> withNewFrame lightCtrlShiftSuper
         LightingCtrlSuper -> withNewFrame lightCtrlSuper
@@ -24,8 +24,11 @@ light new dim KeyboardLightingState {_mode = mode, _time = t, _workspaces = work
         LightingAltShift -> withNewFrame lightAltShift
         LightingShift -> withNewFrame lightShift
         LightingAlt -> withNewFrame lightAlt
-        _               -> Just $ fillKeyboard (rainbow t) dim
-    where withNewFrame :: State Frame () -> Maybe Frame
+        _               -> Just $ fillKeyboard effect dim
+    where effect = case lang of
+                        LangUS -> rainbow t
+                        LangRU -> wrongCoolRainbow t
+          withNewFrame :: State Frame () -> Maybe Frame
           withNewFrame actions = if not new then Nothing else Just . snd $ (runState actions (solidColor colorBlack dim)) 
 
 lightWorkspaces ws = mapM_ lightWorkspace (zip [1..15] ws)
@@ -50,7 +53,8 @@ data KeyboardLightingMode = LightingDefault
                           | LightingShift
                           | LightingAlt
 
-data KeyboardLightingState = KeyboardLightingState { _mode :: KeyboardLightingMode, _time :: Double, _language :: Bool, _workspaces :: [WorkspaceConfig] }
+data Language = LangUS | LangRU
+data KeyboardLightingState = KeyboardLightingState { _mode :: KeyboardLightingMode, _time :: Double, _language :: Language, _workspaces :: [WorkspaceConfig] }
 
 signalToMode :: KeyboardSignal -> Maybe KeyboardLightingMode
 signalToMode SignalCtrlShiftSuper = Just LightingCtrlShiftSuper

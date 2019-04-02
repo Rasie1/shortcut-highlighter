@@ -188,6 +188,10 @@ lightSuper = do
     setY colorGreen
     setX colorGreen
     setV colorGreen
+    setArrowLeft colorGreen
+    setArrowUp colorGreen
+    setArrowDown colorGreen
+    setArrowRight colorGreen
 
 lightAltShift = do
     lightModifiers colorBlue
