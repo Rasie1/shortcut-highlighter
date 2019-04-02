@@ -16,17 +16,9 @@ import Effects
 import Color
 import Keyboard
 
-
 keyboardUpdateDelay = 40000
 frequentInfoUpdateRate = 0.4
 infrequentInfoUpdateRate = 60.0
-
-light :: Bool -> (Int32, Int32) -> KeyboardLightingState -> IO (Maybe Frame)
-light new dim KeyboardLightingState {_mode = mode, _time = t} = 
-    return $ case mode of
-        LightingDefault -> Just $ fillKeyboard (oneColor colorRed t) dim
-        _               -> Just $ fillKeyboard (oneColor colorBlue t) dim
-
 
 step previousUpdateTime previousTime client dimensions cpu keyboardDaemonFile state = do
     t <- getPOSIXTime

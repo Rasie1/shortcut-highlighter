@@ -3,7 +3,16 @@ module Keyboard where
 import Data.Int
 import Data.Char (ord)
 import Color
+import Effects
 import Control.Monad.State.Lazy
+
+
+light :: Bool -> (Int32, Int32) -> KeyboardLightingState -> IO (Maybe Frame)
+light new dim KeyboardLightingState {_mode = mode, _time = t} = 
+    return $ case mode of
+        LightingDefault -> Just $ fillKeyboard (oneColor colorRed t) dim
+        _               -> Just $ fillKeyboard (oneColor colorBlue t) dim
+
 
 data KeyboardLightingMode = LightingDefault
                           | LightingCtrlShiftSuper
