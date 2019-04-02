@@ -60,7 +60,7 @@ fillKeyboard color dim = Frame { _dimensions = (fromIntegral h, fromIntegral w),
           keys :: [[Color]]
           keys = map (map color) indices
 
-solidColor :: (Int32, Int32) -> Color -> Frame
-solidColor dim color = Frame { _dimensions = (fromIntegral h, fromIntegral w), _keys = keys }
+solidColor :: Color -> (Int32, Int32) -> Frame
+solidColor color dim = Frame { _dimensions = (fromIntegral h, fromIntegral w), _keys = keys }
     where (h, w) = dim
           keys = replicate (fromIntegral h) (replicate (fromIntegral w) color)
