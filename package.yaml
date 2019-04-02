@@ -33,6 +33,10 @@ dependencies:
   - unbounded-delays
   - unix
   - ilist
+  - lens-aeson
+  - vector
+  - unordered-containers
+  - scientific
 
 executables:
   shortcut-highlighter:

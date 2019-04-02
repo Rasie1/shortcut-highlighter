@@ -1,7 +1,7 @@
 import Data.Int
 import Data.Maybe
 import Control.Monad
-import DBus.Client
+import qualified DBus.Client as DBus
 import Control.Concurrent.Thread.Delay
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
@@ -12,15 +12,17 @@ import Data.Bits
 
 import Devices.Razer
 import Devices.System
+import qualified Devices.I3 as I3
 import Effects
 import Color
 import Keyboard
 
 keyboardUpdateDelay = 40000
 frequentInfoUpdateRate = 0.4
-infrequentInfoUpdateRate = 60.0
+infrequentInfoUpdateRate = 2.0
 
-step previousUpdateTime previousTime client dimensions cpu keyboardDaemonFile state = do
+
+step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile state = do
     t <- getPOSIXTime
 
     let shouldUpdateInfo = t - previousUpdateTime > frequentInfoUpdateRate
@@ -35,17 +37,24 @@ step previousUpdateTime previousTime client dimensions cpu keyboardDaemonFile st
                       then do char <- hGetChar keyboardDaemonFile
                               return . Just . charToSignal $ char
                       else return Nothing
-    let newState = state { _time = _time state + realToFrac deltaTime * fst cpu
-                         , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode }
+    
+    newWorkspaces <- case maybeSignal of
+                        Just SignalUpdateWorkspaces -> I3.getWorkspacesConfig i3
+                        _ -> return $ _workspaces state
+
+    let newState = 
+            state { _time = _time state + realToFrac deltaTime * fst cpu
+                , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode
+                , _workspaces = newWorkspaces }
     let nextFrame = light (isJust maybeSignal) dimensions newState
 
     -- print (variedRainbow newEffectsTime (1, 1))
-    when (isJust nextFrame) $ setFrame (fromJust nextFrame) client
+    when (isJust nextFrame) $ setFrame (fromJust nextFrame) dbus
 
     delay keyboardUpdateDelay
 
     let newTime = if shouldUpdateInfo then t else previousUpdateTime
-    step newTime t client dimensions cpu keyboardDaemonFile newState
+    step newTime t dbus i3 dimensions cpu keyboardDaemonFile newState
 
 
 getKeyboardDaemonFile path = do
@@ -57,14 +66,17 @@ getKeyboardDaemonFile path = do
 
 
 main = do
-    client <- connectSession
-    dimensions <- getMatrixDimensions client
+    dbus <- DBus.connectSession
+    dimensions <- getMatrixDimensions dbus
     startTime <- getPOSIXTime
     cpu <- getCPUUsage
+    i3 <- I3.connectI3
+
+    ws <- I3.getWorkspacesConfig i3
 
     let filePath = "/etc/rasiel/keyboardrasiel2"
     -- let filePath = "/home/rasiel/.config/i3/keyboardrasiel"
     keyboardDaemonFile <- getKeyboardDaemonFile filePath
-    let state = KeyboardLightingState { _mode = LightingDefault, _time = 0.0 }
+    let state = KeyboardLightingState { _mode = LightingDefault, _time = 0.0, _workspaces = ws }
 
-    step startTime startTime client dimensions cpu keyboardDaemonFile state
+    step startTime startTime dbus i3 dimensions cpu keyboardDaemonFile state

@@ -7,10 +7,10 @@ import Control.Monad.State.Lazy
 import Color
 import Effects
 import Layouts
-
+import Devices.I3 ( WorkspaceConfig(..))
 
 light :: Bool -> (Int32, Int32) -> KeyboardLightingState -> Maybe Frame
-light new dim KeyboardLightingState {_mode = mode, _time = t} = 
+light new dim KeyboardLightingState {_mode = mode, _time = t, _workspaces = workspaces} = 
     case mode of
         LightingCtrlShiftSuper -> withNewFrame lightCtrlShiftSuper
         LightingCtrlSuper -> withNewFrame lightCtrlSuper
@@ -18,9 +18,9 @@ light new dim KeyboardLightingState {_mode = mode, _time = t} =
         LightingCtrlShift -> withNewFrame lightCtrlShift
         LightingCtrlAlt -> withNewFrame lightCtrlAlt
         LightingCtrl -> withNewFrame lightCtrl
-        LightingShiftSuper -> withNewFrame lightShiftSuper
+        LightingShiftSuper -> withNewFrame (lightShiftSuper >> lightWorkspaces workspaces)
         LightingAltSuper -> withNewFrame lightAltSuper
-        LightingSuper -> withNewFrame lightSuper
+        LightingSuper -> withNewFrame (lightSuper >> lightWorkspaces workspaces)
         LightingAltShift -> withNewFrame lightAltShift
         LightingShift -> withNewFrame lightShift
         LightingAlt -> withNewFrame lightAlt
@@ -28,6 +28,13 @@ light new dim KeyboardLightingState {_mode = mode, _time = t} =
     where withNewFrame :: State Frame () -> Maybe Frame
           withNewFrame actions = if not new then Nothing else Just . snd $ (runState actions (solidColor colorBlack dim)) 
 
+lightWorkspaces ws = mapM_ lightWorkspace (zip [1..15] ws)
+lightWorkspace (i, ws) = setColor (1, i) color
+    where color = case ws of
+                WorkspaceEmpty  -> colorDarkgreen
+                WorkspaceWindow -> colorYellow
+                WorkspaceUrgent -> colorOrange
+                WorkspaceActive -> colorWhite
 
 data KeyboardLightingMode = LightingDefault
                           | LightingCtrlShiftSuper
@@ -43,7 +50,7 @@ data KeyboardLightingMode = LightingDefault
                           | LightingShift
                           | LightingAlt
 
-data KeyboardLightingState = KeyboardLightingState { _mode :: KeyboardLightingMode, _time :: Double }
+data KeyboardLightingState = KeyboardLightingState { _mode :: KeyboardLightingMode, _time :: Double, _language :: Bool, _workspaces :: [WorkspaceConfig] }
 
 signalToMode :: KeyboardSignal -> Maybe KeyboardLightingMode
 signalToMode SignalCtrlShiftSuper = Just LightingCtrlShiftSuper
