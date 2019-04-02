@@ -52,6 +52,37 @@ lightCtrlShift = do
     setLeftShift colorWhite
     setRightControl colorWhite
     setRightShift colorWhite
+    set1 colorGreen
+    set2 colorGreen
+    set3 colorGreen
+    set4 colorGreen
+    set5 colorGreen
+    set6 colorGreen
+    set7 colorGreen
+    set8 colorGreen
+    set9 colorGreen
+    setEszett colorGreen
+    setBackquote colorGreen
+    setTab colorGreen
+    setW colorGreen
+    setE colorCyan
+    setR colorCyan
+    setT colorYellow
+    setP colorGreen
+    setS colorGreen
+    setF colorYellow
+    setG colorGreen
+    setY colorGreen
+    setX colorCyan
+    setC colorYellow
+    setV colorYellow
+    setComma colorGreen
+    setPeriod colorGreen
+    setMinus colorGreen
+    setArrowLeft colorGreen
+    setArrowUp colorGreen
+    setArrowDown colorGreen
+    setArrowRight colorGreen
 
 lightCtrlAlt = do
     lightModifiers colorBlue
@@ -59,17 +90,79 @@ lightCtrlAlt = do
     setLeftAlt colorWhite
     setRightControl colorWhite
     setRightAlt colorWhite
+    setArrowLeft colorGreen
+    setArrowUp colorGreen
+    setArrowDown colorGreen
+    setArrowRight colorGreen
 
 lightCtrl = do
     lightModifiers colorBlue
     setLeftControl colorWhite
     setRightControl colorWhite
+    set1 colorGreen
+    set2 colorGreen
+    set3 colorGreen
+    set4 colorGreen
+    set5 colorGreen
+    set6 colorGreen
+    set7 colorGreen
+    set8 colorGreen
+    set9 colorGreen
+    set0 colorGreen
+    setEszett colorGreen
+    setBackquote colorGreen
+    setTab colorGreen
+    setQ colorRed
+    setW colorGreen
+    setR colorGreen
+    setT colorYellow
+    setO colorGreen
+    setP colorGreen
+    setUumlaut colorCyan
+    setPlus colorCyan
+    setEnter colorGreen
+    setA colorYellow
+    setS colorMagenta
+    setD colorGreen
+    setF colorYellow
+    setG colorGreen
+    setJ colorGreen
+    setK colorGreen
+    setL colorGreen
+    setOumlaut colorCyan
+    setAumlaut colorCyan
+    setY colorYellow
+    setX colorYellow
+    setC colorYellow
+    setV colorYellow
+    setComma colorGreen
+    setPeriod colorGreen
+    setMinus colorGreen
+    setArrowLeft colorGreen
+    setArrowUp colorGreen
+    setArrowDown colorGreen
+    setArrowRight colorGreen
 
 lightShiftSuper = do
     lightModifiers colorBlue
     setLeftShift colorWhite
     setLeftSuper colorWhite
     setRightShift colorWhite
+    setE colorRed
+    setR colorGreen
+    setT colorRed
+    setT colorGreen
+    setP colorGreen
+    setEnter colorRed
+    setY colorGreen
+    setX colorGreen
+    setC colorYellow
+    setV colorYellow
+    setB colorYellow
+    setArrowLeft colorGreen
+    setArrowUp colorGreen
+    setArrowDown colorGreen
+    setArrowRight colorGreen
 
 lightAltSuper = do
     lightModifiers colorBlue
@@ -80,6 +173,21 @@ lightAltSuper = do
 lightSuper = do
     lightModifiers colorBlue
     setLeftSuper colorWhite
+    setF8 colorGreen
+    setF9 colorGreen
+    setQ colorRed
+    setW colorRed
+    setR colorGreen
+    setT colorGreen
+    setP colorGreen
+    setD colorGreen
+    setF colorGreen
+    setH colorGreen
+    setL colorGreen
+    setEnter colorGreen
+    setY colorGreen
+    setX colorGreen
+    setV colorGreen
 
 lightAltShift = do
     lightModifiers colorBlue
@@ -87,11 +195,79 @@ lightAltShift = do
     setLeftAlt colorWhite
     setRightShift colorWhite
     setRightAlt colorWhite
+    set1 colorGreen
+    set2 colorGreen
+    set3 colorGreen
+    set4 colorGreen
+    set5 colorGreen
+    set6 colorGreen
+    set7 colorGreen
+    set8 colorGreen
+    set9 colorGreen
+    setArrowLeft colorGreen
+    setArrowUp colorGreen
+    setArrowDown colorGreen
+    setArrowRight colorGreen
 
 lightShift = do
     lightModifiers colorBlue
     setLeftShift colorWhite
     setRightShift colorWhite
+    setF12 colorGreen
+    setCircumflex colorGreen
+    set1 colorGreen
+    set2 colorGreen
+    set3 colorGreen
+    set4 colorGreen
+    set5 colorGreen
+    set6 colorGreen
+    set7 colorGreen
+    set8 colorGreen
+    set9 colorYellow
+    set0 colorYellow
+    setEszett colorGreen
+    setBackquote colorGreen
+    setTab colorGreen
+    setQ colorGreen
+    setW colorGreen
+    setE colorGreen
+    setR colorGreen
+    setT colorGreen
+    setZ colorGreen
+    setU colorGreen
+    setI colorGreen
+    setO colorGreen
+    setP colorGreen
+    setUumlaut colorGreen
+    setPlus colorGreen
+    setA colorGreen
+    setS colorGreen
+    setD colorGreen
+    setF colorGreen
+    setG colorGreen
+    setH colorGreen
+    setJ colorGreen
+    setK colorGreen
+    setL colorGreen
+    setOumlaut colorYellow
+    setAumlaut colorGreen
+    setHash colorGreen
+    setEnter colorGreen
+    setLess colorGreen
+    setY colorGreen
+    setX colorGreen
+    setC colorGreen
+    setV colorGreen
+    setB colorGreen
+    setN colorGreen
+    setM colorGreen
+    setComma colorGreen
+    setPeriod colorGreen
+    setMinus colorGreen
+    setArrowLeft colorGreen
+    setArrowUp colorGreen
+    setArrowDown colorGreen
+    setArrowRight colorGreen
 
 -- Layout for German keyboard. Sorry, you'll have to remap keys for your keyboard.
 
@@ -112,16 +288,16 @@ setInsert = setColor (0,14)
 setDelete = setColor (0,15)
 
 setCircumflex = setColor (1,1)
-setDigit0 = setColor (1,2)
-setDigit1 = setColor (1,3)
-setDigit2 = setColor (1,4)
-setDigit3 = setColor (1,5)
-setDigit4 = setColor (1,6)
-setDigit5 = setColor (1,7)
-setDigit6 = setColor (1,8)
-setDigit7 = setColor (1,9)
-setDigit8 = setColor (1,10)
-setDigit9 = setColor (1,11)
+set1 = setColor (1,2)
+set2 = setColor (1,3)
+set3 = setColor (1,4)
+set4 = setColor (1,5)
+set5 = setColor (1,6)
+set6 = setColor (1,7)
+set7 = setColor (1,8)
+set8 = setColor (1,9)
+set9 = setColor (1,10)
+set0 = setColor (1,11)
 setEszett = setColor (1,12)
 setBackquote = setColor (1,13)
 setBackspace = setColor (1,15)
@@ -139,7 +315,6 @@ setO = setColor (2,10)
 setP = setColor (2,11)
 setUumlaut = setColor (2,12)
 setPlus = setColor (2,13)
-setEnter = setColor (2,14)
 
 setCapsLock = setColor (3,1)
 setA = setColor (3,2)
@@ -154,6 +329,7 @@ setL = setColor (3,10)
 setOumlaut = setColor (3,11)
 setAumlaut = setColor (3,12)
 setHash = setColor (3,13)
+setEnter = setColor (3,15)
 
 setLeftShift = setColor (4,1)
 setLess = setColor (4,2)

@@ -39,6 +39,15 @@ rainbow currentTime (iy, ix) = (r, g, b)
           g = (round (max 0 (sin (t + 2 + x * 0.3) * 200 + 55)))
           b = (round (max 0 (sin (t + 4 + x * 0.3) * 200 + 55)))
 
+disassemblingRainbow :: Double -> (Int32, Int32) -> Color
+disassemblingRainbow currentTime (iy, ix) = (r, g, b)
+    where x = fromIntegral ix
+          y = fromIntegral iy
+          t = currentTime * 10
+          r = (round (max 0 (sin (t +     x * 0.3) * 200 + y * t * 9)))
+          g = (round (max 0 (sin (t + 2 + x * 0.3) * 200 + y * t * 9)))
+          b = (round (max 0 (sin (t + 4 + x * 0.3) * 200 + y * t * 9)))
+
 
 uncalibratedRainbow :: Double -> (Int32, Int32) -> Color
 uncalibratedRainbow currentTime (iy, ix) = (r, g, b)

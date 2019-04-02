@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Devices.System (getCPUUsage, getCPUUsageData, updateCPUUsage) where
+module Devices.System (getCPUUsage
+                      , getCPUUsageData
+                      , updateCPUUsage
+                      , setLanguageRu
+                      , setLanguageUs) where
 
 import System.IO (hPutStr, hClose)
 import System.Process.Typed
@@ -8,6 +12,8 @@ import Data.Int
 import qualified Data.ByteString.Lazy.Char8 as L8
 
 cpuDataCommand = "grep -w cpu /proc/stat"
+setLanguageRuCommand = "setxkbmap ru,us"
+setLanguageUsCommand = "setxkbmap us,ru"
 
 type CPUUsageData = (Int32, Int32, Int32)
 
@@ -36,3 +42,8 @@ updateCPUUsage (oldA, oldB, oldC) = do
     (a, b, c) <- getCPUUsageData
     let ret = fromIntegral (oldA + oldB - a - b) / fromIntegral (oldA + oldB + oldC - a - b - c)
     return (ret, (a, b, c))
+
+setLanguageRu :: IO ()
+setLanguageRu = readProcess_ setLanguageRuCommand >> return ()
+setLanguageUs :: IO ()
+setLanguageUs = readProcess_ setLanguageUsCommand >> return ()

@@ -26,7 +26,7 @@ light new dim KeyboardLightingState {_mode = mode, _time = t} =
         LightingAlt -> withNewFrame lightAlt
         _               -> Just $ fillKeyboard (rainbow t) dim
     where withNewFrame :: State Frame () -> Maybe Frame
-          withNewFrame actions = if not new then Nothing else Just . snd $ (runState actions (fillKeyboard (oneColor colorRed t) dim)) 
+          withNewFrame actions = if not new then Nothing else Just . snd $ (runState actions (solidColor colorBlack dim)) 
 
 
 data KeyboardLightingMode = LightingDefault

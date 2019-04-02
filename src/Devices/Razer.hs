@@ -5,6 +5,8 @@ module Devices.Razer
     , setWaveLeft
     , setFrame
     , getMatrixDimensions
+    , setKeyboardBrightness
+    , getKeyboardBrightness
     ) where 
 
 import Data.List (sort)
@@ -20,6 +22,12 @@ import Color
 
 deviceAddress = "/org/razer/device/BY1750A44000357"
 miscMethod    = "razer.device.misc"
+
+getKeyboardBrightness :: Client -> IO Int16
+getKeyboardBrightness c = return 100
+
+setKeyboardBrightness :: Int16 -> Client -> IO ()
+setKeyboardBrightness brightness c = return ()
 
 setWaveRight :: Client -> IO ()
 setWaveRight c = do
