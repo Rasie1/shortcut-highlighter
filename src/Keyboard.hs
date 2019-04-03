@@ -28,8 +28,11 @@ light new dim KeyboardLightingState {_mode = mode, _time = t, _workspaces = work
     where effect = case lang of
                         LangUS -> rainbow t
                         LangRU -> wrongCoolRainbow t
-          withNewFrame :: State Frame () -> Maybe Frame
-          withNewFrame actions = if not new then Nothing else Just . snd $ (runState actions (solidColor colorBlack dim)) 
+          withNewFrame :: State (Frame, Color) () -> Maybe Frame
+          withNewFrame actions = 
+                if not new 
+                    then Nothing 
+                    else Just . fst . snd $ (runState actions (solidColor colorBlack dim, languageToColor lang)) 
 
 lightWorkspaces ws = mapM_ lightWorkspace (zip [1..15] ws)
 lightWorkspace (i, ws) = setColor (1, i) color
@@ -38,6 +41,9 @@ lightWorkspace (i, ws) = setColor (1, i) color
                 WorkspaceWindow -> colorYellow
                 WorkspaceUrgent -> colorOrange
                 WorkspaceActive -> colorWhite
+
+languageToColor LangRU = colorRed
+languageToColor LangUS = colorBlue
 
 data KeyboardLightingMode = LightingDefault
                           | LightingCtrlShiftSuper
@@ -54,25 +60,31 @@ data KeyboardLightingMode = LightingDefault
                           | LightingAlt
 
 data Language = LangUS | LangRU
-data KeyboardLightingState = KeyboardLightingState { _mode :: KeyboardLightingMode, _time :: Double, _language :: Language, _workspaces :: [WorkspaceConfig] }
+data KeyboardLightingState = 
+    KeyboardLightingState { _mode :: KeyboardLightingMode
+                          , _time :: Double
+                          , _language :: Language
+                          , _workspaces :: [WorkspaceConfig] 
+                          , _previousBrightness :: Double
+                          }
 
 signalToMode :: KeyboardSignal -> Maybe KeyboardLightingMode
-signalToMode SignalCtrlShiftSuper = Just LightingCtrlShiftSuper
-signalToMode SignalCtrlSuper = Just LightingCtrlSuper
-signalToMode SignalCtrlAltShift = Just LightingCtrlAltShift
-signalToMode SignalCtrlShift = Just LightingCtrlShift
-signalToMode SignalCtrlAlt = Just LightingCtrlAlt
-signalToMode SignalCtrl = Just LightingCtrl
-signalToMode SignalShiftSuper = Just LightingShiftSuper
-signalToMode SignalAltSuper = Just LightingAltSuper
-signalToMode SignalSuper = Just LightingSuper
-signalToMode SignalAltShift = Just LightingAltShift
-signalToMode SignalShift = Just LightingShift
-signalToMode SignalAlt = Just LightingAlt
+signalToMode (Modifier SignalCtrlShiftSuper) = Just LightingCtrlShiftSuper
+signalToMode (Modifier SignalCtrlSuper) = Just LightingCtrlSuper
+signalToMode (Modifier SignalCtrlAltShift) = Just LightingCtrlAltShift
+signalToMode (Modifier SignalCtrlShift) = Just LightingCtrlShift
+signalToMode (Modifier SignalCtrlAlt) = Just LightingCtrlAlt
+signalToMode (Modifier SignalCtrl) = Just LightingCtrl
+signalToMode (Modifier SignalShiftSuper) = Just LightingShiftSuper
+signalToMode (Modifier SignalAltSuper) = Just LightingAltSuper
+signalToMode (Modifier SignalSuper) = Just LightingSuper
+signalToMode (Modifier SignalAltShift) = Just LightingAltShift
+signalToMode (Modifier SignalShift) = Just LightingShift
+signalToMode (Modifier SignalAlt) = Just LightingAlt
 signalToMode SignalDefault = Just LightingDefault
 signalToMode _ = Nothing
 
-data KeyboardSignal =
+data ModifierSignal = 
       SignalCtrlShiftSuper
     | SignalCtrlSuper
     | SignalCtrlAltShift
@@ -85,6 +97,10 @@ data KeyboardSignal =
     | SignalAltShift
     | SignalShift
     | SignalAlt
+    deriving (Show)
+
+data KeyboardSignal =
+      Modifier ModifierSignal
     | SignalDefault
     | SignalSwitchlang
     | SignalUpdateWorkspaces
@@ -94,18 +110,18 @@ data KeyboardSignal =
 
 charToSignal :: Char -> KeyboardSignal
 charToSignal c = case ord c of
-    0  -> SignalCtrlShiftSuper
-    1  -> SignalCtrlSuper
-    2  -> SignalCtrlAltShift
-    3  -> SignalCtrlShift
-    4  -> SignalCtrlAlt
-    5  -> SignalCtrl
-    6  -> SignalShiftSuper
-    7  -> SignalAltSuper
-    8  -> SignalSuper
-    9  -> SignalAltShift
-    10 -> SignalShift
-    11 -> SignalAlt
+    0  -> Modifier SignalCtrlShiftSuper
+    1  -> Modifier SignalCtrlSuper
+    2  -> Modifier SignalCtrlAltShift
+    3  -> Modifier SignalCtrlShift
+    4  -> Modifier SignalCtrlAlt
+    5  -> Modifier SignalCtrl
+    6  -> Modifier SignalShiftSuper
+    7  -> Modifier SignalAltSuper
+    8  -> Modifier SignalSuper
+    9  -> Modifier SignalAltShift
+    10 -> Modifier SignalShift
+    11 -> Modifier SignalAlt
     12 -> SignalDefault
     15 -> SignalSwitchlang
     14 -> SignalUpdateWorkspaces

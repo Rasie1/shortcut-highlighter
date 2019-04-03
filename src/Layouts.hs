@@ -1,7 +1,9 @@
 module Layouts where
 import Color
+import Control.Monad.State.Lazy
 
-lightModifiers c = do
+lightModifiers = do
+    (_, c) <- get
     setLeftShift c
     setLeftControl c
     setLeftFn c
@@ -13,7 +15,7 @@ lightModifiers c = do
     setRightAlt c
 
 lightAlt = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftAlt colorWhite
     setRightAlt colorWhite
     setArrowLeft colorGreen
@@ -24,7 +26,7 @@ lightAlt = do
     setO colorGreen
 
 lightCtrlShiftSuper = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftControl colorWhite
     setLeftShift colorWhite
     setLeftSuper colorWhite
@@ -32,13 +34,13 @@ lightCtrlShiftSuper = do
     setRightShift colorWhite
 
 lightCtrlSuper = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftControl colorWhite
     setLeftSuper colorWhite
     setRightControl colorWhite
 
 lightCtrlAltShift = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftControl colorWhite
     setLeftShift colorWhite
     setLeftAlt colorWhite
@@ -47,7 +49,7 @@ lightCtrlAltShift = do
     setRightAlt colorWhite
 
 lightCtrlShift = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftControl colorWhite
     setLeftShift colorWhite
     setRightControl colorWhite
@@ -85,7 +87,7 @@ lightCtrlShift = do
     setArrowRight colorGreen
 
 lightCtrlAlt = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftControl colorWhite
     setLeftAlt colorWhite
     setRightControl colorWhite
@@ -96,7 +98,7 @@ lightCtrlAlt = do
     setArrowRight colorGreen
 
 lightCtrl = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftControl colorWhite
     setRightControl colorWhite
     set1 colorGreen
@@ -144,7 +146,7 @@ lightCtrl = do
     setArrowRight colorGreen
 
 lightShiftSuper = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftShift colorWhite
     setLeftSuper colorWhite
     setRightShift colorWhite
@@ -165,13 +167,13 @@ lightShiftSuper = do
     setArrowRight colorGreen
 
 lightAltSuper = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftAlt colorWhite
     setRightAlt colorWhite
     setLeftSuper colorWhite
 
 lightSuper = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftSuper colorWhite
     setF8 colorGreen
     setF9 colorGreen
@@ -194,7 +196,7 @@ lightSuper = do
     setArrowRight colorGreen
 
 lightAltShift = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftShift colorWhite
     setLeftAlt colorWhite
     setRightShift colorWhite
@@ -214,7 +216,7 @@ lightAltShift = do
     setArrowRight colorGreen
 
 lightShift = do
-    lightModifiers colorBlue
+    lightModifiers
     setLeftShift colorWhite
     setRightShift colorWhite
     setF12 colorGreen

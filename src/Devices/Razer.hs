@@ -23,11 +23,27 @@ import Color
 deviceAddress = "/org/razer/device/BY1750A44000357"
 miscMethod    = "razer.device.misc"
 
-getKeyboardBrightness :: Client -> IO Int16
-getKeyboardBrightness c = return 100
+-- Need to do it multiple times because of hardware bug
+getKeyboardBrightnessOnce :: Client -> IO Double
+getKeyboardBrightnessOnce c = do
+    reply <- call_ c (methodCall deviceAddress "razer.device.lighting.brightness" "getBrightness") 
+                    { methodCallDestination = Just "org.razer" }
+    let x:_ = (map (fromJust . fromVariant) (methodReturnBody reply)) :: [Double]
+    return x
 
-setKeyboardBrightness :: Int16 -> Client -> IO ()
-setKeyboardBrightness brightness c = return ()
+getKeyboardBrightness :: Client -> IO Double
+getKeyboardBrightness c = do
+    a <- getKeyboardBrightnessOnce c
+    b <- getKeyboardBrightnessOnce c
+    c <- getKeyboardBrightnessOnce c
+    return (max a (max b c))
+
+setKeyboardBrightness :: Double -> Client -> IO ()
+setKeyboardBrightness brightness c = do
+    call_ c (methodCall deviceAddress "razer.device.lighting.brightness" "setBrightness") 
+            { methodCallDestination = Just "org.razer"
+            , methodCallBody = [toVariant brightness] }
+    return ()
 
 setWaveRight :: Client -> IO ()
 setWaveRight c = do

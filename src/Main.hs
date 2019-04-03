@@ -31,6 +31,7 @@ step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile s
                 else return cpu
 
     let deltaTime = t - previousTime
+    print deltaTime
 
     ready <- hReady keyboardDaemonFile
     maybeSignal <- if ready 
@@ -41,12 +42,24 @@ step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile s
     newWorkspaces <- case maybeSignal of
                         Just SignalUpdateWorkspaces -> I3.getWorkspacesConfig i3
                         _ -> return $ _workspaces state
+                        
     newLanguage <- case maybeSignal of
                         Just SignalSwitchlang -> case _language state of
                             LangUS -> setLanguageRu >> return LangRU
                             LangRU -> setLanguageUs >> return LangUS
-
                         _ -> return $ _language state
+
+    prevBrightness <- case maybeSignal of
+                            Just (Modifier _) -> do brightness <- getKeyboardBrightness dbus
+                                                    setKeyboardBrightness 100.0 dbus
+                                                    print brightness
+                                                    return brightness
+                            Just SignalDefault -> case _mode state of
+                                                    LightingDefault -> return $ _previousBrightness state
+                                                    _ -> do setKeyboardBrightness (_previousBrightness state) dbus
+                                                            putStrLn "back"
+                                                            return $ _previousBrightness state
+                            _ -> return $ _previousBrightness state
     let newState = 
             state { _time = _time state + realToFrac deltaTime * fst cpu
                 , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode
@@ -54,9 +67,7 @@ step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile s
                 , _language = newLanguage }
     let nextFrame = light (isJust maybeSignal) dimensions newState
 
-    -- print (variedRainbow newEffectsTime (1, 1))
     when (isJust nextFrame) $ setFrame (fromJust nextFrame) dbus
-
     delay keyboardUpdateDelay
 
     let newTime = if shouldUpdateInfo then t else previousUpdateTime
@@ -74,16 +85,21 @@ getKeyboardDaemonFile path = do
 main = do
     dbus <- DBus.connectSession
     dimensions <- getMatrixDimensions dbus
+    brightness <- getKeyboardBrightness dbus
+
     startTime <- getPOSIXTime
     cpu <- getCPUUsage
-    i3 <- I3.connectI3
 
+    i3 <- I3.connectI3
     ws <- I3.getWorkspacesConfig i3
 
-    let filePath = "/etc/rasiel/keyboardrasiel2"
-    -- let filePath = "/home/rasiel/.config/i3/keyboardrasiel"
+    let filePath = "/etc/rasiel/keyboardrasiel"
     keyboardDaemonFile <- getKeyboardDaemonFile filePath
     setLanguageUs
-    let state = KeyboardLightingState { _mode = LightingDefault, _time = 0.0, _workspaces = ws, _language = LangUS }
+    let state = KeyboardLightingState { _mode = LightingDefault
+                                      , _time = 0.0
+                                      , _workspaces = ws
+                                      , _language = LangUS 
+                                      , _previousBrightness = brightness}
 
     step startTime startTime dbus i3 dimensions cpu keyboardDaemonFile state

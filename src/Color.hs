@@ -67,9 +67,9 @@ solidColor color dim = Frame { _dimensions = (fromIntegral h, fromIntegral w), _
     where (h, w) = dim
           keys = replicate (fromIntegral h) (replicate (fromIntegral w) color)
 
-setColor :: (Int32, Int32) -> Color -> State Frame ()
+setColor :: (Int32, Int32) -> Color -> State (Frame, Color) ()
 setColor (y, x) c = do
-    frame <- get
+    (frame, unused) <- get
     let row = _keys frame !! fromIntegral y
     let newRow = setAt (fromIntegral x) c row
-    put frame { _keys = setAt (fromIntegral y) newRow (_keys frame) }
+    put (frame { _keys = setAt (fromIntegral y) newRow (_keys frame) }, unused)
