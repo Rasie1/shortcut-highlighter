@@ -33,6 +33,9 @@ colorLightgreen = (55, 255, 55)
 colorDarkgreen :: Color
 colorDarkgreen = (0, 10, 0)
 
+colorDarkblue :: Color
+colorDarkblue = (5, 0, 15)
+
 colorBlue :: Color
 colorBlue = (0, 0, 255)
 

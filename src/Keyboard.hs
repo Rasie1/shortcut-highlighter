@@ -97,7 +97,7 @@ data ModifierSignal =
     | SignalAltShift
     | SignalShift
     | SignalAlt
-    deriving (Show)
+    deriving (Show, Eq)
 
 data KeyboardSignal =
       Modifier ModifierSignal
@@ -106,7 +106,7 @@ data KeyboardSignal =
     | SignalUpdateWorkspaces
     | SignalSetReactive
     | SignalUnsetReactive
-    deriving (Show)
+    deriving (Show, Eq)
 
 charToSignal :: Char -> KeyboardSignal
 charToSignal c = case ord c of

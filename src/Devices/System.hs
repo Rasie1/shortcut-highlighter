@@ -44,6 +44,10 @@ updateCPUUsage (oldA, oldB, oldC) = do
     return (ret, (a, b, c))
 
 setLanguageRu :: IO ()
-setLanguageRu = readProcess_ setLanguageRuCommand >> return ()
+setLanguageRu = do
+    readProcess_ setLanguageRuCommand 
+    return ()
 setLanguageUs :: IO ()
-setLanguageUs = readProcess_ setLanguageUsCommand >> return ()
+setLanguageUs = do
+    readProcess_ setLanguageUsCommand 
+    return ()

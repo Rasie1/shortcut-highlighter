@@ -1,5 +1,6 @@
 import Data.Int
 import Data.Maybe
+import Data.List
 import Control.Monad
 import qualified DBus.Client as DBus
 import Control.Concurrent.Thread.Delay
@@ -21,7 +22,6 @@ keyboardUpdateDelay = 40000
 frequentInfoUpdateRate = 0.4
 infrequentInfoUpdateRate = 2.0
 
-
 step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile state = do
     t <- getPOSIXTime
 
@@ -31,41 +31,40 @@ step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile s
                 else return cpu
 
     let deltaTime = t - previousTime
-    print deltaTime
 
-    ready <- hReady keyboardDaemonFile
-    maybeSignal <- if ready 
-                      then do char <- hGetChar keyboardDaemonFile
-                              return . Just . charToSignal $ char
-                      else return Nothing
-    
-    newWorkspaces <- case maybeSignal of
-                        Just SignalUpdateWorkspaces -> I3.getWorkspacesConfig i3
-                        _ -> return $ _workspaces state
+    inputSignals <- readAvailableInput keyboardDaemonFile []
+    let maybeSignal = getLatestModeSignal inputSignals
                         
-    newLanguage <- case maybeSignal of
-                        Just SignalSwitchlang -> case _language state of
+    newLanguage <- if shouldSwitchLanguage inputSignals
+                        then case _language state of
                             LangUS -> setLanguageRu >> return LangRU
                             LangRU -> setLanguageUs >> return LangUS
-                        _ -> return $ _language state
+                        else return $ _language state
 
     prevBrightness <- case maybeSignal of
                             Just (Modifier _) -> do brightness <- getKeyboardBrightness dbus
-                                                    setKeyboardBrightness 100.0 dbus
-                                                    print brightness
-                                                    return brightness
+                                                    if (brightness < 99.9) 
+                                                        then do setKeyboardBrightness 100.0 dbus
+                                                                return brightness
+                                                        else return $ _previousBrightness state
                             Just SignalDefault -> case _mode state of
                                                     LightingDefault -> return $ _previousBrightness state
                                                     _ -> do setKeyboardBrightness (_previousBrightness state) dbus
-                                                            putStrLn "back"
                                                             return $ _previousBrightness state
                             _ -> return $ _previousBrightness state
+
+    newWorkspaces <- if shouldUpdateWorkspaces inputSignals 
+                        then I3.getWorkspacesConfig i3
+                        else return $ _workspaces state
+
     let newState = 
             state { _time = _time state + realToFrac deltaTime * fst cpu
-                , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode
-                , _workspaces = newWorkspaces 
-                , _language = newLanguage }
-    let nextFrame = light (isJust maybeSignal) dimensions newState
+                  , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode
+                  , _workspaces = newWorkspaces 
+                  , _previousBrightness = prevBrightness
+                  , _language = newLanguage }
+    let nextFrame = light (isJust maybeSignal || shouldUpdateWorkspaces inputSignals) 
+                          dimensions newState
 
     when (isJust nextFrame) $ setFrame (fromJust nextFrame) dbus
     delay keyboardUpdateDelay
@@ -73,6 +72,19 @@ step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile s
     let newTime = if shouldUpdateInfo then t else previousUpdateTime
     step newTime t dbus i3 dimensions cpu keyboardDaemonFile newState
 
+shouldUpdateWorkspaces :: [KeyboardSignal] -> Bool
+shouldUpdateWorkspaces = elem SignalUpdateWorkspaces
+
+shouldSwitchLanguage :: [KeyboardSignal] -> Bool
+shouldSwitchLanguage = elem SignalSwitchlang
+
+getLatestModeSignal :: [KeyboardSignal] -> Maybe KeyboardSignal
+getLatestModeSignal (x:xs) = case x of 
+                                Modifier a -> Just (Modifier a)
+                                SignalDefault -> Just SignalDefault
+                                _ -> getLatestModeSignal xs
+
+getLatestModeSignal [] = Nothing
 
 getKeyboardDaemonFile path = do
     exists <- fileExist path
@@ -81,6 +93,11 @@ getKeyboardDaemonFile path = do
         else return ()
     openFile path ReadMode
 
+readAvailableInput f xs = do 
+    ready <- hReady f
+    if ready then do char <- hGetChar f
+                     readAvailableInput f ((charToSignal char):xs)
+             else return xs
 
 main = do
     dbus <- DBus.connectSession
