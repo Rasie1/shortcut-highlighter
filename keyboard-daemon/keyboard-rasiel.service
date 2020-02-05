@@ -1,0 +1,11 @@
+[Unit]
+Description=Keyboard daemon for changing language and chroma color
+
+[Service]
+Restart=always
+ExecStart=/etc/rasiel/keyboard-daemon.py
+Type=simple
+User=root
+
+[Install]
+WantedBy=multi-user.target
