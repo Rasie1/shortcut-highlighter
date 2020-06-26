@@ -1,0 +1,13 @@
+[Unit]
+Description=Daemon listening to chroma color change requests
+Requires=openrazer-daemon.service
+After=openrazer-daemon.service
+
+[Service]
+Restart=always
+ExecStart=/home/rasiel/.local/bin/shortcut-highlighter
+Type=simple
+Environment=DISPLAY=:1
+
+[Install]
+WantedBy=default.target
