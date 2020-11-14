@@ -17,6 +17,8 @@ import qualified Devices.I3 as I3
 import Effects
 import Color
 import Keyboard
+import SystemState
+import qualified Devices.Yeelight as Bulb
 
 keyboardUpdateDelay = 40000
 frequentInfoUpdateRate = 0.4
@@ -25,6 +27,7 @@ infrequentInfoUpdateRate = 2.0
 step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile state = do
     t <- getPOSIXTime
 
+    let keyboard = _keyboard state
     let shouldUpdateInfo = t - previousUpdateTime > frequentInfoUpdateRate
     cpu <- if shouldUpdateInfo 
                 then updateCPUUsage (snd cpu)
@@ -46,23 +49,27 @@ step previousUpdateTime previousTime dbus i3 dimensions cpu keyboardDaemonFile s
                                                     if (brightness < 99.9) 
                                                         then do setKeyboardBrightness 100.0 dbus
                                                                 return brightness
-                                                        else return $ _previousBrightness state
-                            Just SignalDefault -> case _mode state of
-                                                    LightingDefault -> return $ _previousBrightness state
-                                                    _ -> do setKeyboardBrightness (_previousBrightness state) dbus
-                                                            return $ _previousBrightness state
-                            _ -> return $ _previousBrightness state
+                                                        else return $ _previousBrightness keyboard
+                            Just SignalDefault -> case _mode keyboard of
+                                                    LightingDefault -> return $ _previousBrightness keyboard
+                                                    _ -> do setKeyboardBrightness (_previousBrightness keyboard) dbus
+                                                            return $ _previousBrightness keyboard
+                            _ -> return $ _previousBrightness keyboard
 
     newWorkspaces <- if shouldUpdateWorkspaces inputSignals 
                         then I3.getWorkspacesConfig i3
-                        else return $ _workspaces state
+                        else return $ _workspaces keyboard
 
+    newBulbBrightness <- handleBulbBrightness (_bulbBrightness state) inputSignals
+
+    let cpuTimeModifier = fst cpu * fst cpu * 5
     let newState = 
-            state { _time = _time state + realToFrac deltaTime * fst cpu
-                  , _mode = fromMaybe (_mode state) $ maybeSignal >>= signalToMode
-                  , _workspaces = newWorkspaces 
-                  , _previousBrightness = prevBrightness
-                  , _language = newLanguage }
+            state { _keyboard = keyboard { _time = _time keyboard + realToFrac deltaTime * cpuTimeModifier
+                                         , _mode = fromMaybe (_mode keyboard) $ maybeSignal >>= signalToMode
+                                         , _workspaces = newWorkspaces 
+                                         , _previousBrightness = prevBrightness }
+                  , _language = newLanguage
+                  , _bulbBrightness = newBulbBrightness }
     let nextFrame = light (isJust maybeSignal || shouldUpdateWorkspaces inputSignals) 
                           dimensions newState
 
@@ -77,6 +84,12 @@ shouldUpdateWorkspaces = elem SignalUpdateWorkspaces
 
 shouldSwitchLanguage :: [KeyboardSignal] -> Bool
 shouldSwitchLanguage = elem SignalSwitchlang
+
+handleBulbBrightness :: Int16 -> [KeyboardSignal] -> IO (Int16)
+handleBulbBrightness prev signals = mapM handle signals >>= return . sum
+    where handle SignalIncreaseBulbBrightness = Bulb.increaseBrightness prev
+          handle SignalDecreaseBulbBrightness = Bulb.decreaseBrightness prev
+          handle _ = return 0
 
 getLatestModeSignal :: [KeyboardSignal] -> Maybe KeyboardSignal
 getLatestModeSignal (x:xs) = case x of 
@@ -113,10 +126,17 @@ main = do
     let filePath = "/etc/rasiel/keyboardrasiel"
     keyboardDaemonFile <- getKeyboardDaemonFile filePath
     setLanguageUs
-    let state = KeyboardLightingState { _mode = LightingDefault
+    let keyboardState = 
+                KeyboardLightingState { _mode = LightingDefault
                                       , _time = 0.0
                                       , _workspaces = ws
-                                      , _language = LangUS 
                                       , _previousBrightness = brightness}
-
-    step startTime startTime dbus i3 dimensions cpu keyboardDaemonFile state
+    let systemState = SystemState { _keyboard = keyboardState
+                                  , _language = LangUS
+                                  , _bulbBrightness = 100
+                                  }
+    step startTime startTime 
+         dbus i3 
+         dimensions cpu 
+         keyboardDaemonFile 
+         systemState

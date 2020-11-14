@@ -22,6 +22,8 @@ Shortcut highlighter consists of two services.
 Run keyboard daemon (it listens to keypresses and turns them into events for `shortcut-highlighter` service)
 
 ```
+sudo pip3 install keyboard
+sudo mkdir /etc/rasiel
 cd keyboard-daemon && sudo python3 keyboard-daemon.py
 ```
 

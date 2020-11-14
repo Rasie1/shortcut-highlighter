@@ -2,15 +2,22 @@ module Keyboard where
 
 import Data.Int
 import Data.Char (ord)
-import Control.Monad.State.Lazy
+import Control.Monad.Trans.State
+import Data.Functor.Identity
 
 import Color
 import Effects
 import Layouts
-import Devices.I3 ( WorkspaceConfig(..))
+import Devices.I3 (WorkspaceConfig(..))
+import SystemState
 
-light :: Bool -> (Int32, Int32) -> KeyboardLightingState -> Maybe Frame
-light new dim KeyboardLightingState {_mode = mode, _time = t, _workspaces = workspaces, _language = lang} = 
+light :: Bool -> (Int32, Int32) -> SystemState -> Maybe Frame
+light new dim
+      SystemState { _keyboard = KeyboardLightingState { _mode = mode
+                                                      , _time = t
+                                                      , _workspaces = workspaces
+                                                      }
+                  , _language = lang} = 
     case mode of
         LightingCtrlShiftSuper -> withNewFrame lightCtrlShiftSuper
         LightingCtrlSuper -> withNewFrame lightCtrlSuper
@@ -24,17 +31,23 @@ light new dim KeyboardLightingState {_mode = mode, _time = t, _workspaces = work
         LightingAltShift -> withNewFrame lightAltShift
         LightingShift -> withNewFrame lightShift
         LightingAlt -> withNewFrame lightAlt
-        _               -> Just $ fillKeyboard effect dim
-    where effect = case lang of
+        _               -> fromFrame (lightWorkspaces workspaces)
+    where keyboardWithEffect :: Frame
+          keyboardWithEffect = fillKeyboard effect dim
+          effect = case lang of
                         LangUS -> rainbow t
-                        LangRU -> wrongCoolRainbow t
-          withNewFrame :: State (Frame, Color) () -> Maybe Frame
+                        LangRU -> wrongCoolRainbow t --disassemblingRainbow t 
+          fromFrame actions = Just . fst . snd $ runState actions (keyboardWithEffect, colorBlack)
+          withNewFrame :: StateT (Frame, Color) Identity () -> Maybe Frame
           withNewFrame actions = 
                 if not new 
                     then Nothing 
                     else Just . fst . snd $ (runState actions (solidColor colorBlack dim, languageToColor lang)) 
 
+lightWorkspaces :: [WorkspaceConfig] -> StateT (Frame, Color) Identity ()
 lightWorkspaces ws = mapM_ lightWorkspace (zip [1..15] ws)
+
+lightWorkspace :: (Int32, WorkspaceConfig) -> StateT (Frame, Color) Identity ()
 lightWorkspace (i, ws) = setColor (1, i) color
     where color = case ws of
                 WorkspaceEmpty  -> colorDarkgreen
@@ -44,29 +57,6 @@ lightWorkspace (i, ws) = setColor (1, i) color
 
 languageToColor LangRU = colorRed
 languageToColor LangUS = colorBlue
-
-data KeyboardLightingMode = LightingDefault
-                          | LightingCtrlShiftSuper
-                          | LightingCtrlSuper
-                          | LightingCtrlAltShift
-                          | LightingCtrlShift
-                          | LightingCtrlAlt
-                          | LightingCtrl
-                          | LightingShiftSuper
-                          | LightingAltSuper
-                          | LightingSuper
-                          | LightingAltShift
-                          | LightingShift
-                          | LightingAlt
-
-data Language = LangUS | LangRU
-data KeyboardLightingState = 
-    KeyboardLightingState { _mode :: KeyboardLightingMode
-                          , _time :: Double
-                          , _language :: Language
-                          , _workspaces :: [WorkspaceConfig] 
-                          , _previousBrightness :: Double
-                          }
 
 signalToMode :: KeyboardSignal -> Maybe KeyboardLightingMode
 signalToMode (Modifier SignalCtrlShiftSuper) = Just LightingCtrlShiftSuper
@@ -106,6 +96,8 @@ data KeyboardSignal =
     | SignalUpdateWorkspaces
     | SignalSetReactive
     | SignalUnsetReactive
+    | SignalIncreaseBulbBrightness
+    | SignalDecreaseBulbBrightness
     deriving (Show, Eq)
 
 charToSignal :: Char -> KeyboardSignal
@@ -127,3 +119,5 @@ charToSignal c = case ord c of
     14 -> SignalUpdateWorkspaces
     56 -> SignalSetReactive
     57 -> SignalUnsetReactive
+    100 -> SignalIncreaseBulbBrightness
+    101 -> SignalDecreaseBulbBrightness

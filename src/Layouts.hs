@@ -293,6 +293,7 @@ setF12 = setColor (0,13)
 setInsert = setColor (0,14)
 setDelete = setColor (0,15)
 
+setWorkspaceButton i = setColor (1, i)
 setCircumflex = setColor (1,1)
 set1 = setColor (1,2)
 set2 = setColor (1,3)
