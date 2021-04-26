@@ -114,18 +114,12 @@ def on_release_action(c):
     if c.name not in keymap:
         return
     keynum = keymap[c.name]
+    if (keynum == 2 or keynum == 3) and not keys[0] and not keys[1] and keys[2] and keys[3]:
+        switchlang()
     keys[keynum] = False
-    process_language_switching_keys(keynum)
     if disabled:
         return
     update_light()
-
-def on_shiftalt_release():
-    if will_switch_lang[0] and will_switch_lang[1]:
-        switchlang()
-    else:
-        will_switch_lang[0] = True
-        will_switch_lang[1] = False
 
 def on_press_action(c):
     if disabled:
@@ -145,7 +139,6 @@ def on_press_action(c):
     if c.name not in keymap:
         return
     keynum = keymap[c.name]
-    process_language_switching_keys(keynum)
 
     if keys[keynum]:
         return
@@ -161,6 +154,5 @@ def handle_press(e):
         on_release_action(e)
 
 keyboard.hook(handle_press)
-keyboard.add_hotkey('shift+alt', on_shiftalt_release, trigger_on_release=True)
 
 keyboard.wait()
