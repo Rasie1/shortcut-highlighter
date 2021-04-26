@@ -154,8 +154,13 @@ def on_press_action(c):
 
     update_light()
 
-keyboard.on_press(on_press_action)
-keyboard.on_release(on_release_action)
+def handle_press(e):
+    if e.event_type == keyboard.KEY_DOWN:
+        on_press_action(e)
+    else:
+        on_release_action(e)
+
+keyboard.hook(handle_press)
 keyboard.add_hotkey('shift+alt', on_shiftalt_release, trigger_on_release=True)
 
 keyboard.wait()
